@@ -1,3 +1,4 @@
+#!/usr/bin/env/python3
 import telebot
 import re
 
@@ -19,15 +20,15 @@ def echo_text(message):
 	hashtags = len(re.findall(hashtag_pattern, text))
 	markup = telebot.types.InlineKeyboardMarkup()
 	button = telebot.types.InlineKeyboardButton("{0} из 2200; # - {1}".format(len_text, hashtags),
-												callback_data=("instatext", len_text, hashtags))
+                                                callback_data="instatext {0} {1}".format(len_text, hashtags))
 	markup.add(button)
 	bot.send_message(message.chat.id, text, reply_markup=markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def query_handler(call):
-	if call.data[0] == 'instatext':
-		bot.answer_callback_query(callback_query_id=call.id, text='{0} из 2200; # - {1}'.format(*call.data[1:]))
+    if call.data.startswith('instatext'):
+        bot.answer_callback_query(callback_query_id=call.id, text='{0} из 2200; # - {1}'.format(*call.data.split()[1:]))
 
 if __name__ == '__main__':
 	bot.polling(none_stop=True, timeout=100)
