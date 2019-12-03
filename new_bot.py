@@ -2,7 +2,8 @@
 import telebot
 import re
 
-TOKEN = 'TELEGRAM TOKEN'
+
+TOKEN = '773428065:AAFczy9ybU3d7cJzvmpaVscLSn6miZnd3vI'
 bot = telebot.TeleBot(TOKEN)
 hashtag_pattern = re.compile("(^|\s)#([^\d&%$_-]\S{2,49})\b")
 
@@ -14,7 +15,7 @@ def hello_im_bot(message):
 
 @bot.message_handler(content_types=['text'])
 def echo_text(message):
-    text = message.text.replace('\n\n', '\n\u2800\n')
+	text = message.text.replace('\n\n', '\n\u2800\n')
 	len_text = len(text)
 	hashtags = len(re.findall(hashtag_pattern, text))
 	markup = telebot.types.InlineKeyboardMarkup()
