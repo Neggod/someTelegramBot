@@ -1,6 +1,6 @@
 import pymysql
 import pymysql.cursors
-from settings import DB_CONNECTION_VALUES
+from settings import DB_CONNECTION_VALUES, ADMINS_ID
 
 
 class MySQLiter:
@@ -11,6 +11,34 @@ class MySQLiter:
     обязательно запилить последний метод.
     '''
 
+    def __check_tables(self):
+        lessons = """CREATE TABLE IF NOT EXISTS `lessons` (
+      `lesson_id` int(11) NOT NULL AUTO_INCREMENT,
+      `theme_id` int(11) DEFAULT NULL,
+      `theme` tinytext,
+      `lesson_number` int(11) NOT NULL DEFAULT '1',
+      `text_lesson` text NOT NULL,
+      `current_task` int(11) DEFAULT NULL,
+      `next_lesson_id` int(11) DEFAULT NULL,
+      `audio_id` tinytext,
+      `image_id` tinytext,
+      PRIMARY KEY (`lesson_id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci"""
+        users = """CREATE TABLE IF NOT EXISTS `users` (
+      `user_id` int(11) NOT NULL,
+      `first_name` tinytext,
+      `current_theme` int(11) DEFAULT '1',
+      `current_task` tinyint(4) DEFAULT '1',
+      `email` tinytext,
+      PRIMARY KEY (`user_id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+"""
+        with self.db:
+            self.cursor.execute(lessons)
+            self.cursor.execute(users)
+            self.db.commit()
+
     def __init__(self, host, database, username, password):
         self.db = pymysql.connect(
             host=host,
@@ -20,58 +48,7 @@ class MySQLiter:
             cursorclass=pymysql.cursors.DictCursor
         )
         self.cursor = self.db.cursor()
-
-    def select_lesson(self, lesson_id):
-        with self.db:
-            self.cursor.execute('SELECT * FROM lessons WHERE lesson_id = %s)', lesson_id)
-            return self.cursor.fetchone()
-
-    def get_next_lesson(self, lesson_id):
-        sql_insert = 'UPDATE lessons SET next_lesson_id = %s WHERE lesson_id = {0}'
-
-    def max_lesson(self):
-        sql_select = 'SELECT MAX(lesson_id) FROM lessons'
-        with self.db:
-            self.cursor.execute(sql_select)
-            return self.cursor.fetchone()['MAX(lesson_id)']
-
-    def select_lesson_by_user_id(self, user_id):
-        with self.db:
-            self.cursor.execute(
-                'SELECT * FROM lessons WHERE lesson_id = ('
-                'SELECT current_lesson FROM users WHERE user_id = %s)', user_id)
-            return self.cursor.fetchone()
-
-    def get_lessons_count_for_theme(self, theme_id):
-        lessons = []
-        count = 0
-        with self.db:
-            self.cursor.execute('SELECT lesson_id FROM lessons WHERE theme_id = %s', theme_id)
-            for var in self.cursor.fetchall():
-                lessons.append(var['lesson_id'])
-            count = \
-            self.cursor.execute('SELECT COUNT(lesson_id) FROM lessons WHERE theme_id = %s', theme_id).fetchone()[
-                'COUNT(lesson_id)']
-            return count, lessons
-
-    def get_next_lesson_id(self, user_id):
-
-        with self.db:
-            self.cursor.execute(
-                'SELECT next_lesson_id FROM lessons WHERE lesson_id = ('
-                'SELECT current_lesson FROM users WHERE user_id = %s)', user_id)
-            next_id = self.cursor.fetchone()['next_lesson_id']
-        self.set_next_lesson(user_id, next_id)
-        return
-
-    def set_next_lesson(self, user_id, next_id=None):
-        with self.db:
-            if not next_id:
-                next_id = self.get_next_lesson_id(user_id)
-            self.cursor.execute(
-                'UPDATE users SET current_lesson = {0} WHERE user_id = {1}'.format(next_id, user_id))
-            self.db.commit()
-            return next_id
+        self.__check_tables()
 
     def add_user(self, user_id, **kwargs):
         sql_insert = 'INSERT INTO users ({0}) VALUES ({1})'
@@ -94,87 +71,99 @@ class MySQLiter:
         with self.db:
             self.cursor.execute(sql_select, user_id)
             user = self.cursor.fetchone()
+            print("I'm in db get user=)", user)
             if not user:
                 self.add_user(user_id, **kwargs)
                 self.cursor.execute(sql_select, user_id)
                 return self.cursor.fetchone()
             return user
 
-    def add_lesson(self, **kwargs):
-        columns = []
-        values = []
-        sql_insert = 'INSERT INTO lessons ({0}) VALUES ({1})'
-        theme = kwargs['theme']
-        for k, v in kwargs.items():
-            if k == 'lesson_number':
-                v == self.get_lesson_number_by_theme(theme)
-                if v > 1:
-                    v += 1
-            if not v or k == 'new_lesson':
-                continue
-            v = '\'{}\''.format(v)
-            columns.append(k)
-            values.append(str(v))
-        sql_insert = sql_insert.format(', '.join(columns), ', '.join(values))
+    def return_all_themes(self):
+        sql_request = 'SELECT theme FROM lessons'
+        themes = []
         with self.db:
-            print(sql_insert)
-            self.cursor.execute(sql_insert)
-            self.db.commit()
+            self.cursor.execute(sql_request)
+            pool = self.cursor.fetchall()
+        for theme in pool:
+            if theme['theme'] in themes:
+                continue
+            themes.append(theme['theme'])
+        return themes
 
-    def get_theme_id(self, theme=None):
+    def get_theme_id(self, theme):
         '''
 
         :param theme: exiting or new theme
         :return: return theme_id for theme or max id (if add new lesson)
         '''
-        sql_select = 'SELECT MAX(theme_id) FROM lessons'
-        if theme:
-            sql_select += ' WHERE theme = \'{}\''.format(theme)
+        sql_select = 'SELECT theme_id FROM lessons WHERE theme LIKE  "%{0}%"'.format(theme)
         with self.db:
             self.cursor.execute(sql_select)
-            theme_id = self.cursor.fetchone()['MAX(theme_id)']
-            print(theme_id, 1)
-        if not theme_id:
-            theme_id = self.get_theme_id()
-            return theme_id + 1
-        print(theme_id, 2)
-        return theme_id
-
-    def get_lesson_number_by_theme(self, theme=None):
-        if not theme:
-            return
-        sql_select = 'SELECT lesson_number FROM lessons WHERE theme = \'{}\''.format(theme)
-        with self.db:
-            self.cursor.execute(sql_select)
-            temp_number = self.cursor.fetchall()
-        lesson_number = 1  # in database "1" - default lesson_number
-        if not temp_number:
-            return lesson_number
-        for number in temp_number:
-            if number['lesson_number'] > lesson_number:
-                lesson_number = number['lesson_number']
-        lesson_number += 1
-        return lesson_number
+            theme_id = self.cursor.fetchone()
+            if not theme_id:
+                self.cursor.execute('SELECT MAX(theme_id) FROM lessons')
+                theme_id = self.cursor.fetchone()
+                return theme_id['MAX(theme_id)'] + 1
+            return theme_id['theme_id']
 
     def get_course_by_theme(self, theme):
         '''
-        From database get lesson_number:lesson_id, text_lesson, audio_id, image_id
+        From database get lesson_number: text_lesson, audio_id, image_id
         :param theme:
         :return: dict:
         '''
-        pass
+        theme = '"{0}"'.format(theme)
+        # theme_id = self.__get_theme_id_from_users(user_id)
+        sql_request = 'SELECT text_lesson, voice_id, image_id FROM lessons WHERE theme = {0}'.format(theme)
+        with self.db:
+            self.cursor.execute(sql_request)
+            return self.cursor.fetchall()
 
-    def add_course(self, theme_object):
+    def set_current_theme(self, theme, user_id):
+        """
+        
+        :param theme: 
+        :param user_id: 
+        :return: 
+        """
+        theme_id = self.get_theme_id(theme)
+        sql_request = "UPDATE users SET current_theme = {0} WHERE user_id = {1}".format(theme_id, user_id)
+        with self.db:
+            self.cursor.execute(sql_request)
+            self.db.commit()
+
+    def add_course(self, theme, user_id, course_list):
         """
         Insert into database course params
         :param theme:
-        :return:
+        :param user_id:
+        :param course_list:
+        :return: True or False
         """
-        pass
+        if user_id in ADMINS_ID:
+            sql_request = 'INSERT theme, theme_id, text_lesson, voice_id, image_id INTO lessons VALUES {0}'
+            values = []
+            theme_id = self.get_theme_id(theme)
+            for _lesson in course_list:
+                value = (theme, theme_id, _lesson.text, _lesson.voice, _lesson.image)
+                values.append(value)
+            sql_request.format(tuple(values))
+            with self.db:
+                self.cursor.execute(sql_request)
+                self.db.commit()
+
+    def __get_theme_id_from_users(self, user_id):
+        sql_request = "SELECT current_theme FROM users WHERE user_id = {0}".format(user_id)
+        with self.db:
+            self.cursor.execute(sql_request)
+            theme_id = self.cursor.fetchone()['current_theme']
+            return theme_id
 
 
 if __name__ == '__main__':
     test = MySQLiter(*DB_CONNECTION_VALUES)
-    t = test.max_lesson()
-
-    print(t)
+    f = test.return_all_themes()
+    print(f)
+    id1 = test.get_theme_id(f[1])
+    id2 = test.get_theme_id('Foo')
+    print(id1, id2)

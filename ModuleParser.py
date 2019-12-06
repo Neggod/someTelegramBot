@@ -3,6 +3,7 @@
 import requests
 import re
 import json
+from settings import PROXY
 
 
 class IG_stories_and_post_Parser:
@@ -10,7 +11,7 @@ class IG_stories_and_post_Parser:
     def __init__(self, url, headers):
         self.__url = url
         self.__headers = headers
-        self.__page = requests.get(self.__url, params=self.__headers)
+        self.__page = requests.get(self.__url, params=self.__headers, proxies=PROXY)
         self.IGTVs = {}
         self.posts = {}
 
