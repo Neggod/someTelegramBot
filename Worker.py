@@ -183,18 +183,20 @@ class Worker:
         # "notice"	"date_of_last_post"	"message_id"
 
         if self.channels.get(owner_id) and self.channels[owner_id].get(link):
-            time_ = datetime.datetime.fromtimestamp(self.channels[owner_id][link].date_of_last_post)
-            now = datetime.datetime.now()
-            if (now - time_) // (60 * 60) >= self.__time_limit:
-                name, names = self.parse_link(link)
-                if name and not name == self.channels[owner_id][link].name_channel:
-                    self.channels[owner_id][link].name_channel = name
-                if names:
-                    self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
-                    print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
-                    self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
-                    self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
-                print(f'SUCCESSFUL PARSING {link}')
+            if self.channels[owner_id][link].date_of_last_post:
+                time_ = datetime.datetime.fromtimestamp(self.channels[owner_id][link].date_of_last_post)
+                now = datetime.datetime.now()
+                if (now - time_) // (60 * 60) >= self.__time_limit:
+                    name, names = self.parse_link(link)
+                    if name and not name == self.channels[owner_id][link].name_channel:
+                        self.channels[owner_id][link].name_channel = name
+                    if names:
+                        self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+                        print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
+                        self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
+                        self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
+                    print(f'SUCCESSFUL PARSING {link}')
+           
             return 0
 
         vals = self._get_channel_from_db(link)
