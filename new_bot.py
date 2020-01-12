@@ -27,7 +27,7 @@ check_chat_link = parser.get('Telegram', 'check_chat_link')
 check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_link})"
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
-apihelper.proxy = None#{'https': 'https://127.0.0.1:8888'}
+apihelper.proxy = {'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username
 ALL_CATEGORIES = ["Медицина", "Еда и рецепты", "Семья и отношения", "Блоги", "Красота и мода", "Новости", "Здоровье",
@@ -150,7 +150,7 @@ def set_buttons(bad_target: set = None, pattern=None, **kwargs):
         for k in patterns:
             if k in bad_target:
                 continue
-            button.add(types.InlineKeyboardButton(patterns[k], callback_data='ready' + ' ' + k))
+            button.add(types.InlineKeyboardButton(patterns[k], callback_data=k))
         return button
     if not kwargs and pattern == 'send':
         button.add(types.InlineKeyboardButton(patterns[pattern], callback_data=pattern))
@@ -211,16 +211,17 @@ def close_channel(m):
         status = worker.check_channel(link, m.chat.id, m.chat.username)
         if status == 0 and worker.channels[m.chat.id][link].chat_id:
             print(f"PRIVATE CHANNEL OF {m.chat.username} IN DB OR IN MEMO")
-            time_ = datetime.datetime.fromtimestamp(worker.channels[m.chat.id][link].date_of_last_post)
-            now = datetime.datetime.now()
-            if (now - time_) // (60 * 60) >= worker.limit:
-                post = worker.channels[m.chat.id][link].create_post(m.chat.username)
-                btn = set_buttons(pattern='send')
-                worker.users[m.chat.id].target = 'send'
-            else:
-                post = f"Посты можно отправлять не чаще одного раза в {worker.limit} часов."
-                btn = big_btn
-            bot.send_message(m.chat.id, post, reply_markup=btn, parse_mode='Markdown', disable_web_page_preview=True)
+            if worker.channels[m.chat.id][link].date_of_last_post:
+                time_ = datetime.datetime.fromtimestamp(worker.channels[m.chat.id][link].date_of_last_post)
+                now = datetime.datetime.now()
+                if (now - time_) // (60 * 60) >= worker.limit:
+                    post = worker.channels[m.chat.id][link].create_post(m.chat.username)
+                    btn = set_buttons(pattern='send')
+                    worker.users[m.chat.id].target = 'send'
+                else:
+                    post = f"Посты можно отправлять не чаще одного раза в {worker.limit} часов."
+                    btn = big_btn
+                bot.send_message(m.chat.id, post, reply_markup=btn, parse_mode='Markdown', disable_web_page_preview=True)
 
         else:
             print(f"PRIVATE CHANNEL OF {m.chat.username} FROM PARSER")
@@ -359,7 +360,7 @@ class CallbackCommands:
                                       reply_markup=btn, parse_mode='Markdown')
             else:
                 print(f"USER {chat_id} NOT IN SELF TARGET CHANNEL")
-                btn = set_buttons()
+                btn = set_buttons(pattern='defaulf')
                 worker.users[chat_id].clear()
                 bot.edit_message_text(f'Видимо вы нажали кнопку просто так. :)', chat_id, mess_id, reply_markup=btn)
         except telebot.apihelper.ApiException:
@@ -701,6 +702,8 @@ class CallbackCommands:
                             btn = set_buttons(pattern='ready', **{'ready': 'Добавил channel'})
                             bot.delete_message(chat_id, mess_id)
                             bot.send_message(chat_id, text, reply_markup=btn)
+                    elif call_func.isdigit():
+                        pass
 
                     else:
                         self.CALLBACK.get(call_func, 'none_funk')(chat_id, mess_id, *args)
@@ -863,18 +866,20 @@ def forwarded_message(m):
             else:
                 print(f"USER {m.chat.username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
                 for chat_member in bot.get_chat_administrators(m.forward_from_chat.id):
+                    print(chat_member.user.id, "IS ADMIN")
 
                     if chat_member.user.id == m.chat.id:
                         btn = set_buttons(pattern='edit')
                         bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
                                          disable_web_page_preview=True)
+                        print()
                         break
                     else:
                         print(chat_member.user.username, f' - админ чата {chat_.title}')
                 else:
                     print(f"USER {m.chat.username} NOT IN CHAT {chat_.title} DISCRIPTION AND NOT IN ADMINS")
                     worker.users[m.chat.id].target = 'add_channel'
-                    btn = set_buttons(pattern='ready', **{'ready': f'Исправил {chat_.id}'})
+                    btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
                     bot.send_message(m.chat.id, f"Вы не являетесь администратором группы {chat_.title}, "
                                                 f"нужно добавить свой @username в описание канала"
                                                 "и нажать на кнопку, чтобы продолжить", reply_markup=btn)
