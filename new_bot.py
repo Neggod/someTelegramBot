@@ -125,7 +125,7 @@ def set_buttons(bad_target: set = None, pattern=None, **kwargs):
                     else:
                         button.add(types.InlineKeyboardButton(v, callback_data=value.format(k)))
                 else:
-                    multirows.append(types.InlineKeyboardMarkup(k, callback_data=value.format(v)))
+                    multirows.append(types.InlineKeyboardButton(k, callback_data=value.format(v)))
             if multirows:
                 button.row(*multirows)
             temp_row = []
@@ -1017,6 +1017,7 @@ def commands(m):  # FUCKING TODO
                "или ссылку на канал, если канал приватный."
         print(f"USER {m.chat.username} WRITE ME SOMTHING")
         bot.send_message(m.chat.id, text, reply_markup=big_btn)
+
 
 @bot.message_handler(func=lambda m: m.chat.id < 0 and m.chat.id not in [main_channel_id, check_chat_id]
                                     and worker.users.get(m.from_user.id), content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
