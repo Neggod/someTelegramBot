@@ -120,6 +120,8 @@ def set_buttons(bad_target: set = None, pattern=None, **kwargs):
                         multirows_.append(types.InlineKeyboardButton(v, callback_data=value.format(k)))
                     else:
                         button.add(types.InlineKeyboardButton(v, callback_data=value.format(k)))
+                else:
+                    multirows.append(types.InlineKeyboardMarkup(k, callback_data=value.format(v)))
             if multirows:
                 button.row(*multirows)
             temp_row = []
@@ -147,10 +149,10 @@ def set_buttons(bad_target: set = None, pattern=None, **kwargs):
         return button
     if not kwargs and pattern == 'edit':
         print(f'PATTERN EDIT WITH {bad_target}')
-        for k in patterns:
+        for k, v in patterns.items():
             if k in bad_target:
                 continue
-            button.add(types.InlineKeyboardButton(patterns[k], callback_data=k))
+            button.add(types.InlineKeyboardButton(v, callback_data=k))
         return button
     if not kwargs and pattern == 'send':
         button.add(types.InlineKeyboardButton(patterns[pattern], callback_data=pattern))
@@ -539,10 +541,25 @@ class CallbackCommands:
     def notice(self, chat_id, mess_id, *args):
         link = worker.users[chat_id].target_url
         if worker.users[chat_id].target != 'notice':
-            worker.users[chat_id].target = 'notice'
-            bot.delete_message(chat_id, mess_id)
-            bot.send_message(chat_id, 'Если хотите добавить примечание (не более 100 знаков)',
-                             reply_markup=types.ReplyKeyboardRemove())
+            if not args:
+                btn = set_buttons(pattern='notice', **{"Добавить примечание": 1, "Не добавлять": 0})
+                bot.delete_message(chat_id, mess_id)
+                bot.send_message(chat_id, 'Хотите ли вы добавить примечание для своего канала?',
+                                 reply_markup=btn)
+            elif args and int(args[0]):
+                worker.users[chat_id].target = 'notice'
+                bot.delete_message(chat_id, mess_id)
+                bot.send_message(chat_id, 'Напишите мне примечание (не более 100 знаков), для своего объявления.',
+                                 reply_markup=types.ReplyKeyboardRemove())
+            else:
+                worker.users[chat_id].target = 'edit'
+                worker.users[chat_id].bad_target.add('notice')
+                username = worker.users[chat_id].username
+                post = worker.channels[chat_id][link].create_post(username)
+                btn = set_buttons(pattern='edit', bad_target=worker.users[chat_id].bad_target)
+                bot.edit_message_text(post, chat_id, mess_id, parse_mode='Markdown', reply_markup=btn,
+                                      disable_web_page_preview=True)
+
         else:
             if args:
                 worker.users[chat_id].target = 'edit'
