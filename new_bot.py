@@ -1040,7 +1040,7 @@ def get_group_chat(m:types.Message):
                 worker.channels[m.from_user.id][link].name = chat_.title
             if not worker.channels[m.from_user.id][link].chat_id:
                 worker.channels[m.from_user.id][link].chat_id = chat_.id
-            post = worker.channels[m.from_user.id][link].create_post(m.chat.username)
+            post = worker.channels[m.from_user.id][link].create_post(m.from_user.username)
             if chat_.description and m.from_user.username in chat_.description:
                 print(f"USER {m.from_user.username} IN DESCRIPTION OF CHAT {chat_.title}")
                 btn = set_buttons(pattern='edit')
