@@ -186,7 +186,7 @@ class Worker:
             if self.channels[owner_id][link].date_of_last_post:
                 time_ = datetime.datetime.fromtimestamp(self.channels[owner_id][link].date_of_last_post)
                 now = datetime.datetime.now()
-                if (now - time_) // (60 * 60) >= self.__time_limit:
+                if (now - time_).seconds // (60 * 60) >= self.__time_limit:
                     name, names = self.parse_link(link)
                     if name and not name == self.channels[owner_id][link].name_channel:
                         self.channels[owner_id][link].name_channel = name
@@ -212,7 +212,7 @@ class Worker:
 
             time_ = datetime.datetime.fromtimestamp(self.channels[owner_id][link].date_of_last_post)
             now = datetime.datetime.now()
-            if (now - time_) // (60 * 60) >= self.__time_limit:
+            if (now - time_).seconds // (60 * 60) >= self.__time_limit:
                 name, names = self.parse_link(link)
                 if name and not name == self.channels[owner_id][link].name_channel:
 

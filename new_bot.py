@@ -220,7 +220,7 @@ def close_channel(m):
             if worker.channels[m.chat.id][link].date_of_last_post:
                 time_ = datetime.datetime.fromtimestamp(worker.channels[m.chat.id][link].date_of_last_post)
                 now = datetime.datetime.now()
-                if (now - time_) // (60 * 60) >= worker.limit:
+                if (now - time_).seconds // (60 * 60) >= worker.limit:
                     post = worker.channels[m.chat.id][link].create_post(m.chat.username)
                     btn = set_buttons(pattern='send')
                     worker.users[m.chat.id].target = 'send'
@@ -287,7 +287,7 @@ def open_channel(m):
                         print(f"CHAT {chat.title} IN DB OR IN MEMO")
                         time_ = datetime.datetime.fromtimestamp(worker.channels[m.chat.id][link].date_of_last_post)
                         now = datetime.datetime.now()
-                        if (now - time_) // (60 * 60) >= worker.limit:
+                        if (now - time_).seconds // (60 * 60) >= worker.limit:
                             post = worker.channels[m.chat.id][link].create_post(m.chat.username)
                             btn = set_buttons(pattern='send')
                             worker.users[m.chat.id].target = 'send'
