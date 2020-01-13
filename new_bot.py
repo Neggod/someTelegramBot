@@ -231,9 +231,12 @@ def close_channel(m):
 
         else:
             print(f"PRIVATE CHANNEL OF {m.chat.username} FROM PARSER")
+            name_channel = ''
+            if worker.channels[m.chat.id][link].name:
+                name_channel = worker.channels[m.chat.id][link].name.replace("_", "\_")
             post = worker.channels[m.chat.id][link].create_post(m.chat.username)
             # btn = set_buttons(pattern='edit')
-            name_channel = worker.channels[m.chat.id][link].name.replace("_", "\_")
+
             bot.send_message(m.chat.id, f'Вот, что собрал о вашем канале {name_channel}: '
                                         f'\n{post}', parse_mode="Markdown", reply_markup=big_btn,
                              disable_web_page_preview=True)
@@ -241,8 +244,9 @@ def close_channel(m):
             # else:
             print(f"HAVEN`T PRIVATE CHANNEL OF {m.chat.username}")
             bot.send_message(m.chat.id,
-                             f"Так как это закрытый канал, необходимо добавить туда бота @{bot.get_me().username} "
-                             f"и переслать сюда любое сообщение с канала.", reply_markup=big_btn)
+                             f"Так как это закрытый канал или группа, необходимо добавить туда бота @{bot.get_me().username} "
+                             f"и переслать сюда любое сообщение с канала. Если у вас закрытая группа, необходимо, "
+                             f"после добавления бота написать в группе любое сообщение.", reply_markup=big_btn)
     else:
         print(f"USER {m.chat.username} SEND CHANNEL, BUT HE NOT IN DB")
         btn = set_buttons(pattern='ready', **{'ready': "Подписался"})
@@ -863,52 +867,55 @@ def forwarded_message(m):
     if worker.users.get(m.chat.id) and worker.users[m.chat.id].target_url and worker.users[m.chat.id].target_url.startswith("https://t.me/joinchat"):
         print(f"USER {m.chat.username} YIELD IN VALUE LINK {worker.users[m.chat.id]} =)")
         link = worker.users[m.chat.id].target_url
-        try:
-            print(f"USER {m.chat.username} TRY PARSING DATA FROM CHANNEL {m.forward_from_chat.title}")
-            chat_ = bot.get_chat(m.forward_from_chat.id)
-            print(chat_)
-            total = bot.get_chat_members_count(chat_.id)
-            if total < 1000:
-                bot.send_message(m.chat.id, "В вашем канале меньше 1000 подписчиков.", reply_markup=big_btn)
-                return
-            if not worker.channels[m.chat.id][link].subscribers:
-                worker.channels[m.chat.id][link].subscribers = total
-            print(worker.channels[m.chat.id][link].subscribers)
-            if not worker.channels[m.chat.id][link].name:
-                worker.channels[m.chat.id][link].name = chat_.title
-            if not worker.channels[m.chat.id][link].chat_id:
-                worker.channels[m.chat.id][link].chat_id = chat_.id
-            post = worker.channels[m.chat.id][link].create_post(m.chat.username)
-            if chat_.description and m.chat.username in chat_.description:
-                print(f"USER {m.chat.username} IN DESCRIPTION OF CHAT {chat_.title}")
-                btn = set_buttons(pattern='edit')
-                bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
-                                 disable_web_page_preview=True)
-            else:
-                print(f"USER {m.chat.username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
-                for chat_member in bot.get_chat_administrators(m.forward_from_chat.id):
-                    print(chat_member.user.id, "IS ADMIN")
-
-                    if chat_member.user.id == m.chat.id:
-                        btn = set_buttons(pattern='edit')
-                        bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
-                                         disable_web_page_preview=True)
-                        print()
-                        break
-                    else:
-                        print(chat_member.user.username, f' - админ чата {chat_.title}')
+        if link:
+            try:
+                print(f"USER {m.chat.username} TRY PARSING DATA FROM CHANNEL {m.forward_from_chat.title}")
+                chat_ = bot.get_chat(m.forward_from_chat.id)
+                print(chat_)
+                total = bot.get_chat_members_count(chat_.id)
+                if total < 1000:
+                    bot.send_message(m.chat.id, "В вашем канале меньше 1000 подписчиков.", reply_markup=big_btn)
+                    return
+                if not worker.channels[m.chat.id][link].subscribers:
+                    worker.channels[m.chat.id][link].subscribers = total
+                print(worker.channels[m.chat.id][link].subscribers)
+                if not worker.channels[m.chat.id][link].name:
+                    worker.channels[m.chat.id][link].name = chat_.title
+                if not worker.channels[m.chat.id][link].chat_id:
+                    worker.channels[m.chat.id][link].chat_id = chat_.id
+                post = worker.channels[m.chat.id][link].create_post(m.chat.username)
+                if chat_.description and m.chat.username in chat_.description:
+                    print(f"USER {m.chat.username} IN DESCRIPTION OF CHAT {chat_.title}")
+                    btn = set_buttons(pattern='edit')
+                    bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
+                                     disable_web_page_preview=True)
                 else:
-                    print(f"USER {m.chat.username} NOT IN CHAT {chat_.title} DISCRIPTION AND NOT IN ADMINS")
-                    worker.users[m.chat.id].target = 'add_channel'
-                    btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
-                    bot.send_message(m.chat.id, f"Вы не являетесь администратором группы {chat_.title}, "
-                                                f"нужно добавить свой @username в описание канала"
-                                                "и нажать на кнопку, чтобы продолжить", reply_markup=btn)
+                    print(f"USER {m.chat.username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
+                    for chat_member in bot.get_chat_administrators(m.forward_from_chat.id):
+                        print(chat_member.user.id, "IS ADMIN")
 
-        except telebot.apihelper.ApiException:
-            print(f"SLY USER {m.chat.username} FORWARD MESSAGE BUT DON`T ADD IN CHANNEL")
-            bot.send_message(m.chat.id, "Так как это закрытый канал, необходимо добавить меня в этот канал, "
-                                        "и переслать мне какое-нибудь сообщение оттуда.")
+                        if chat_member.user.id == m.chat.id:
+                            btn = set_buttons(pattern='edit')
+                            bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
+                                             disable_web_page_preview=True)
+                            print()
+                            break
+                        else:
+                            print(chat_member.user.username, f' - админ чата {chat_.title}')
+                    else:
+                        print(f"USER {m.chat.username} NOT IN CHAT {chat_.title} DISCRIPTION AND NOT IN ADMINS")
+                        worker.users[m.chat.id].target = 'add_channel'
+                        btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
+                        bot.send_message(m.chat.id, f"Вы не являетесь администратором группы {chat_.title}, "
+                                                    f"нужно добавить свой @username в описание канала"
+                                                    "и нажать на кнопку, чтобы продолжить", reply_markup=btn)
+
+            except telebot.apihelper.ApiException:
+                print(f"SLY USER {m.chat.username} FORWARD MESSAGE BUT DON`T ADD IN CHANNEL")
+                bot.send_message(m.chat.id, "Так как это закрытый канал, необходимо добавить меня в этот канал, "
+                                            "и переслать мне какое-нибудь сообщение оттуда.")
+        else:
+            bot.leave_chat(m.chat.id)
     else:
         worker.users[m.chat.id].clear()
         text = "Для того чтобы запустить объявление о продаже рекламы: \n" \
@@ -1004,6 +1011,61 @@ def commands(m):  # FUCKING TODO
                "или ссылку на канал, если канал приватный."
         print(f"USER {m.chat.username} WRITE ME SOMTHING")
         bot.send_message(m.chat.id, text, reply_markup=big_btn)
+
+@bot.message_handler(func=lambda m: m.chat.id < 0 and worker.users.get(m.from_user.id), content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
+                                    'voice', 'location', 'contact'])
+def get_group_chat(m:types.Message):
+    big_btn = set_buttons(pattern='default')
+    print(f"USER {m.from_user.username} YIELD IN CLOSED CHANNEL {worker.users[m.from_user.id]} =)")
+    link = worker.users[m.from_user.id].target_url
+    if link:
+        try:
+            print(f"USER {m.from_user.username} TRY PARSING DATA FROM CHANNEL {m.chat.title}")
+            chat_ = bot.get_chat(m.chat.id)
+            print(chat_)
+            total = bot.get_chat_members_count(chat_.id)
+            if total < 1000:
+                bot.send_message(m.from_user.id, "В вашем канале меньше 1000 подписчиков.", reply_markup=big_btn)
+                return
+            if not worker.channels[m.from_user.id][link].subscribers:
+                worker.channels[m.from_user.id][link].subscribers = total
+            if not worker.channels[m.from_user.id][link].name:
+                worker.channels[m.from_user.id][link].name = chat_.title
+            if not worker.channels[m.from_user.id][link].chat_id:
+                worker.channels[m.from_user.id][link].chat_id = chat_.id
+            post = worker.channels[m.from_user.id][link].create_post(m.chat.username)
+            if chat_.description and m.from_user.username in chat_.description:
+                print(f"USER {m.from_user.username} IN DESCRIPTION OF CHAT {chat_.title}")
+                btn = set_buttons(pattern='edit')
+                bot.send_message(m.from_user.id, post, parse_mode='Markdown', reply_markup=btn,
+                                 disable_web_page_preview=True)
+            else:
+                print(f"USER {m.chat.username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
+                for chat_member in bot.get_chat_administrators(m.chat.id):
+                    print(chat_member.user.username, "IS ADMIN")
+
+                    if chat_member.user.id == m.from_user.id:
+                        btn = set_buttons(pattern='edit')
+                        bot.send_message(m.from_user.id, post, parse_mode='Markdown', reply_markup=btn,
+                                         disable_web_page_preview=True)
+                        print()
+                        break
+                    else:
+                        print(chat_member.user.username, f' - админ чата {chat_.title}')
+                else:
+                    print(f"USER {m.from_user.username} NOT IN CHAT {chat_.title} DISCRIPTION AND NOT IN ADMINS")
+                    worker.users[m.from_user.id].target = 'add_channel'
+                    btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
+                    bot.send_message(m.from_user.id, f"Вы не являетесь администратором группы {chat_.title}, "
+                                                f"нужно добавить свой @username в описание канала"
+                                                "и нажать на кнопку, чтобы продолжить", reply_markup=btn)
+
+        except telebot.apihelper.ApiException:
+            print(f"SLY USER {m.from_user.username} FORWARD MESSAGE BUT DON`T ADD IN CHANNEL")
+            bot.send_message(m.from_user.id, "Так как это закрытый чат, необходимо добавить меня в этот канал, "
+                                        "и написать там какое-нибудь сообщение.")
+    else:
+        bot.leave_chat(m.chat.id)
 
 
 
