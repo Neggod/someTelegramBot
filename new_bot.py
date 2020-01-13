@@ -62,6 +62,10 @@ def set_buttons(bad_target: set = None, pattern=None, **kwargs):
     if len(bad_target) == len(patterns):
         button.add(types.InlineKeyboardButton('Опубликовать', callback_data='send'))
         return button
+    elif len(bad_target) == (len(patterns) - 1) and 'notice' not in bad_target:
+        button.row(types.InlineKeyboardButton(patterns['notice'], callback_data='notice'),
+                   types.InlineKeyboardButton('Опубликовать', callback_data='send'))
+        return button
 
     if pattern == 'admin':
         if not kwargs:
