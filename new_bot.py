@@ -422,6 +422,12 @@ class CallbackCommands:
                 bot.delete_message(chat_id, m_id)
                 bot.edit_message_text(text, chat_id, mess_id, parse_mode='Markdown', disable_web_page_preview=True,
                                       reply_markup=btn)
+                try:
+                    bot.leave_chat(worker.channels[chat_id][link].chat_id)
+                except Exception:
+                    pass
+                return
+
 
             else:
                 bot.edit_message_text(f"Посты можно отправлять не чаще одного раза в {worker.limit} часов.",
@@ -867,7 +873,7 @@ def forwarded_message(m):
     if worker.users.get(m.chat.id) and worker.users[m.chat.id].target_url and worker.users[m.chat.id].target_url.startswith("https://t.me/joinchat"):
         print(f"USER {m.chat.username} YIELD IN VALUE LINK {worker.users[m.chat.id]} =)")
         link = worker.users[m.chat.id].target_url
-        if link:
+        if link and worker.channels.get(m.from_user.id).get(link):
             try:
                 print(f"USER {m.chat.username} TRY PARSING DATA FROM CHANNEL {m.forward_from_chat.title}")
                 chat_ = bot.get_chat(m.forward_from_chat.id)
@@ -1012,13 +1018,14 @@ def commands(m):  # FUCKING TODO
         print(f"USER {m.chat.username} WRITE ME SOMTHING")
         bot.send_message(m.chat.id, text, reply_markup=big_btn)
 
-@bot.message_handler(func=lambda m: m.chat.id < 0 and worker.users.get(m.from_user.id), content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
+@bot.message_handler(func=lambda m: m.chat.id < 0 and m.chat.id not in [main_channel_id, check_chat_id]
+                                    and worker.users.get(m.from_user.id), content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
                                     'voice', 'location', 'contact'])
 def get_group_chat(m:types.Message):
     big_btn = set_buttons(pattern='default')
     print(f"USER {m.from_user.username} YIELD IN CLOSED CHANNEL {worker.users[m.from_user.id]} =)")
     link = worker.users[m.from_user.id].target_url
-    if link:
+    if link and worker.channels.get(m.from_user.id).get(link):
         try:
             print(f"USER {m.from_user.username} TRY PARSING DATA FROM CHANNEL {m.chat.title}")
             chat_ = bot.get_chat(m.chat.id)
@@ -1066,7 +1073,6 @@ def get_group_chat(m:types.Message):
                                         "и написать там какое-нибудь сообщение.")
     else:
         bot.leave_chat(m.chat.id)
-
 
 
 if __name__ == '__main__':

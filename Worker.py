@@ -275,6 +275,8 @@ class Worker:
                                     channel.date_of_last_post, channel.message_id, channel.notice, channel.chat_id,
                                     channel.views_per_post, channel.er)
 
+            self.channels.get(chat_id).pop(link)
+
     @staticmethod
     def parse_link(link):
         def login(session):
