@@ -316,7 +316,8 @@ def close_channel(m):
                     f"-*Переслать мне какое-нибудь сообщение с канала, если это канал*.\n"
                     f"-*Написать в группе любое сообщение, если это группа*.")
             bot.delete_message(m.chat.id, m_id)
-            bot.send_message(m.chat.id, text, reply_markup=big_btn)
+            bot.send_message(m.chat.id, text, parse_mode="Markdown", disable_web_page_preview=True,
+                             reply_markup=big_btn)
             # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
             # name, names = worker.parse_link(link)
             # if name and not name == worker.channels[m.chat.id][link].name_channel:
