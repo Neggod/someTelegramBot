@@ -315,7 +315,8 @@ def close_channel(m):
             text = (f"Так как это закрытый канал или группа - необходимо добавить туда {bot_name}, и:\n "
                     f"-*Переслать мне какое-нибудь сообщение с канала, если это канал*.\n"
                     f"-*Написать в группе любое сообщение, если это группа*.")
-            bot.edit_message_text(text, m.chat.id, m_id, reply_markup=big_btn)
+            bot.delete_message(m.chat.id, m_id)
+            bot.send_message(m.chat.id, text, reply_markup=big_btn)
             # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
             # name, names = worker.parse_link(link)
             # if name and not name == worker.channels[m.chat.id][link].name_channel:
