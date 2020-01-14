@@ -69,11 +69,11 @@ class SQLiter:
 
     def add_new_channel(self, name_channel, link_channel, description, owner_id,
                         subscribers, ads_cost, time_in_top_tape, pr,
-                        date_of_last_post, message_id,
+                        date_of_last_post, message_id, chat_status,
                         notice=None, chat_id=None, views_per_post=None, er=None):
         args = (chat_id, name_channel, link_channel, owner_id, description,
                 subscribers, views_per_post, er, ads_cost, time_in_top_tape, pr,
-                notice, date_of_last_post, message_id)
+                notice, date_of_last_post, message_id, chat_status)
         while True:
             try:
                 with self.db:
@@ -81,9 +81,10 @@ class SQLiter:
                         "INSERT OR REPLACE INTO channels_post (chat_id, name_channel, link_channel, "
                         "owner_id, description,"
                         "subscribers, views_per_post, er, ads_cost, time_in_top_tape, pr, notice,"
-                        "date_of_last_post, message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", args)
+                        "date_of_last_post, message_id, chat_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                        "?, ?)", args)
                     self.db.commit()
-                print(f"Channel {name_channel} added successfully in {date_of_last_post}")
+                print(f"{chat_status} {name_channel} added successfully in {date_of_last_post}")
                 break
             except sqlite3.ProgrammingError:
                 print("wait")

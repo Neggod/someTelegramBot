@@ -41,11 +41,12 @@ class User:
 class Channel:
 
     def __init__(self, link_channel, owner_id, name_channel=None, description=None,
-                 subscribers=None, ads_cost=None, pr=None,
+                 subscribers=None, ads_cost=None, pr=None, chat_status=None,
                  date_of_last_post=None, message_id=None, time_in_top_tape=None,
                  notice=None, chat_id=None, views_per_post=None, er=None, username=None):
 
         self.link_channel = link_channel
+        self.chat_status = chat_status if chat_status else 'Канал'
         self.name = name_channel
         self.description: list = description
         self.owner_id = owner_id
@@ -70,6 +71,20 @@ class Channel:
             return f"[@{self.name}]({self.link_channel})"
         else:
             return self.link_channel
+
+    def create_bad_target(self):
+        bad_target = set()
+        if self.description:
+            bad_target.add('categories')
+        if self.ads_cost:
+            bad_target.add('ads_cost')
+        if self.time_in_top_tape:
+            bad_target.add('time')
+        if self.notice:
+            bad_target.add('notice')
+        if self.pr:
+            bad_target.add('self_piar')
+        return bad_target
 
     def create_post(self, username):
         temp_name = None
@@ -121,6 +136,7 @@ class Worker:
     @property
     def limit(self):
         return self.__time_limit
+
     @limit.setter
     def limit(self, other):
         self.__time_limit = int(other)
@@ -152,28 +168,29 @@ class Worker:
 
     def create_new_channel(self, link, owner_id, username=None):
         print(link, "STARTING CREATE NEW CHANNEL")
+        # HERE MUST BE RETURN 1 OR WorkerError
         if link.startswith("@") or link.startswith("https://t.me/joinchat/"):
             print("START PARSING")
-            result = self.parse_link(link)
-            if result and result[0]:
-                print(result)
-                name, names = result
-
-                if name:
-
-                    self.channels[owner_id][link] = Channel(link, owner_id, name_channel=name,
-                                                            username=username)
-                if names:
-                    self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
-                    print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
-                    self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
-                    self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
-                print(f'SUCCESSFUL PARSING {link}')
-
-                return 1
-            else:
-                self.channels[owner_id][link] = Channel(link, owner_id, username=username)
-                return 2
+            # result = self.parse_link(link)
+            # if result and result[0]:
+            #     print(result)
+            #     name, names = result
+            # 
+            #     if name:
+            # 
+            #         self.channels[owner_id][link] = Channel(link, owner_id, name_channel=name,
+            #                                                 username=username)
+            #     if names:
+            #         self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+            #         print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
+            #         self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
+            #         self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
+            #     print(f'SUCCESSFUL PARSING {link}')
+            # 
+            #     return 1
+            # else:
+            self.channels[owner_id][link] = Channel(link, owner_id, username=username)
+            return 1
         else:
             raise WorkerError("Something wrong ad 138")
 
@@ -196,7 +213,10 @@ class Worker:
                         self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
                         self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
                     print(f'SUCCESSFUL PARSING {link}')
-           
+            else:
+                self.channels[owner_id].pop(link)
+                return self.create_new_channel(link, owner_id, username)
+
             return 0
 
         vals = self._get_channel_from_db(link)
@@ -208,17 +228,18 @@ class Worker:
                                                     ads_cost=vals[9],
                                                     pr=vals[11], date_of_last_post=vals[13], message_id=vals[14],
                                                     time_in_top_tape=vals[10], notice=vals[12], chat_id=vals[2],
-                                                    views_per_post=vals[7], er=vals[8], username=username)
+                                                    views_per_post=vals[7], er=vals[8], chat_status=vals[15],
+                                                    username=username)
 
             time_ = datetime.datetime.fromtimestamp(self.channels[owner_id][link].date_of_last_post)
             now = datetime.datetime.now()
             if (now - time_).seconds // (60 * 60) >= self.__time_limit:
                 name, names = self.parse_link(link)
                 if name and not name == self.channels[owner_id][link].name_channel:
-
                     self.channels[owner_id][link].name_channel = name
                 if names:
-                    self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+                    if names['Подписчиков']:
+                        self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
                     print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
                     self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
                     self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
@@ -266,13 +287,14 @@ class Worker:
     def all_users(self):
         return self.db.get_all_users()
 
+    # TODO Добавить чат_статус
     def save_data_channel(self, chat_id, link):
         if self.channels.get(chat_id) and self.channels.get(chat_id).get(link):
             channel = self.channels[chat_id][link]
             self.db.add_new_channel(channel.name, channel.link_channel, channel.description,
                                     channel.owner_id,
                                     channel.subscribers, channel.ads_cost, channel.time_in_top_tape, channel.pr,
-                                    channel.date_of_last_post, channel.message_id, channel.notice, channel.chat_id,
+                                    channel.date_of_last_post, channel.message_id, channel.chat_status, channel.notice, channel.chat_id,
                                     channel.views_per_post, channel.er)
 
             self.channels.get(chat_id).pop(link)
