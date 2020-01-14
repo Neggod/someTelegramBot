@@ -316,18 +316,18 @@ def close_channel(m):
                     f"-*Переслать мне какое-нибудь сообщение с канала, если это канал*.\n"
                     f"-*Написать в группе любое сообщение, если это группа*.")
             bot.edit_message_text(text, m.chat.id, m_id, reply_markup=big_btn)
-            print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
-            name, names = worker.parse_link(link)
-            if name and not name == worker.channels[m.chat.id][link].name_channel:
-                worker.channels[m.chat.id][link].name_channel = name
-            if names:
-                if names['Подписчиков']:
-                    worker.channels[m.chat.id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
-                print(
-                    f'ПОДПИСЧИКОВ {worker.channels[m.chat.id][link].name_channel} - {worker.channels[m.chat.id][link].subscribers}')
-                worker.channels[m.chat.id][link].views_per_post = names["Просмотров на пост"]
-                worker.channels[m.chat.id][link].er = names['ER'] if names['ER'] != '%' else None
-            print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link} IS OVER")
+            # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
+            # name, names = worker.parse_link(link)
+            # if name and not name == worker.channels[m.chat.id][link].name_channel:
+            #     worker.channels[m.chat.id][link].name_channel = name
+            # if names:
+            #     if names['Подписчиков']:
+            #         worker.channels[m.chat.id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+            #     print(
+            #         f'ПОДПИСЧИКОВ {worker.channels[m.chat.id][link].name_channel} - {worker.channels[m.chat.id][link].subscribers}')
+            #     worker.channels[m.chat.id][link].views_per_post = names["Просмотров на пост"]
+            #     worker.channels[m.chat.id][link].er = names['ER'] if names['ER'] != '%' else None
+            # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link} IS OVER")
     else:
         print(f"USER {m.chat.username} SEND CLOSED CHANNEL, BUT HE NOT IN DB")
         btn = set_buttons(pattern='ready', **{'ready': "Подписался"})
@@ -377,18 +377,18 @@ def open_channel(m: types.Message):
             bot.delete_message(m.chat.id, m_id)
             bot.send_message(m.chat.id, text, reply_markup=btn, parse_mode='Markdown',
                              disable_web_page_preview=True)
-            print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
-            name, names = worker.parse_link(link)
-            if name and not name == worker.channels[m.chat.id][link].name_channel:
-                worker.channels[m.chat.id][link].name_channel = name
-            if names:
-                if names['Подписчиков']:
-                    worker.channels[m.chat.id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
-                print(
-                    f'ПОДПИСЧИКОВ {worker.channels[m.chat.id][link].name_channel} - {worker.channels[m.chat.id][link].subscribers}')
-                worker.channels[m.chat.id][link].views_per_post = names["Просмотров на пост"]
-                worker.channels[m.chat.id][link].er = names['ER'] if names['ER'] != '%' else None
-            print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link} IS OVER")
+            # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link}")
+            # name, names = worker.parse_link(link)
+            # if name and not name == worker.channels[m.chat.id][link].name_channel:
+            #     worker.channels[m.chat.id][link].name_channel = name
+            # if names:
+            #     if names['Подписчиков']:
+            #         worker.channels[m.chat.id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+            #     print(
+            #         f'ПОДПИСЧИКОВ {worker.channels[m.chat.id][link].name_channel} - {worker.channels[m.chat.id][link].subscribers}')
+            #     worker.channels[m.chat.id][link].views_per_post = names["Просмотров на пост"]
+            #     worker.channels[m.chat.id][link].er = names['ER'] if names['ER'] != '%' else None
+            # print(f"CHECK TELEMETR FOR {m.chat.username} WITH {link} IS OVER")
                 
             # chat = bot.get_chat(link)
             # print(f"GET CHAT {chat.title} VALUES")

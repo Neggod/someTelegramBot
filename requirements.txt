@@ -4,7 +4,6 @@ certifi==2019.11.28
 chardet==3.0.4
 idna==2.8
 lxml==4.4.2
-PyMySQL==0.9.3
 pyTelegramBotAPI==3.6.6
 requests==2.22.0
 six==1.12.0

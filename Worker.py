@@ -171,28 +171,28 @@ class Worker:
         # HERE MUST BE RETURN 1 OR WorkerError
         if link.startswith("@") or link.startswith("https://t.me/joinchat/"):
             print("START PARSING")
-            # result = self.parse_link(link)
-            # if result and result[0]:
-            #     print(result)
-            #     name, names = result
-            # 
-            #     if name:
-            # 
-            #         self.channels[owner_id][link] = Channel(link, owner_id, name_channel=name,
-            #                                                 username=username)
-            #     if names:
-            #         self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
-            #         print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
-            #         self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
-            #         self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
-            #     print(f'SUCCESSFUL PARSING {link}')
-            # 
-            #     return 1
-            # else:
-            self.channels[owner_id][link] = Channel(link, owner_id, username=username)
+            result = self.parse_link(link)
+            if result and result[0]:
+                print(result)
+                name, names = result
+
+                if name:
+
+                    self.channels[owner_id][link] = Channel(link, owner_id, name_channel=name,
+                                                            username=username)
+                if names:
+                    self.channels[owner_id][link].subscribers = int(names['Подписчиков'].replace("'", ""))
+                    print(f'ПОДПИСЧИКОВ - {self.channels[owner_id][link].subscribers}')
+                    self.channels[owner_id][link].views_per_post = names["Просмотров на пост"]
+                    self.channels[owner_id][link].er = names['ER'] if names['ER'] != '%' else None
+                print(f'SUCCESSFUL PARSING {link}')
+
+                return 1
+            else:
+                self.channels[owner_id][link] = Channel(link, owner_id, username=username)
             return 1
         else:
-            raise WorkerError("Something wrong ad 138")
+            raise WorkerError("Something wrong ad 195")
 
     def check_channel(self, link, owner_id, username=None):
         # "id"	"owner_id"	"chat_id"	"link_channel"	"name_channel"	"description"	"subscribers"
