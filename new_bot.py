@@ -890,7 +890,7 @@ def forwarded_message(m):
                 if not worker.channels[m.chat.id][link].chat_id:
                     worker.channels[m.chat.id][link].chat_id = chat_.id
                 post = worker.channels[m.chat.id][link].create_post(m.chat.username)
-                if chat_.description:# and m.chat.username in chat_.description:
+                if chat_.description and m.chat.username in chat_.description:
                     print(f"USER {m.chat.username} IN DESCRIPTION OF CHAT {chat_.title}")
                     btn = set_buttons(pattern='edit')
                     bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
