@@ -890,7 +890,7 @@ def forwarded_message(m):
                 if not worker.channels[m.chat.id][link].chat_id:
                     worker.channels[m.chat.id][link].chat_id = chat_.id
                 post = worker.channels[m.chat.id][link].create_post(m.chat.username)
-                if chat_.description and m.chat.username in chat_.description:
+                if chat_.description:# and m.chat.username in chat_.description:
                     print(f"USER {m.chat.username} IN DESCRIPTION OF CHAT {chat_.title}")
                     btn = set_buttons(pattern='edit')
                     bot.send_message(m.chat.id, post, parse_mode='Markdown', reply_markup=btn,
@@ -1041,6 +1041,8 @@ def get_group_chat(m:types.Message):
                 worker.channels[m.from_user.id][link].name = chat_.title
             if not worker.channels[m.from_user.id][link].chat_id:
                 worker.channels[m.from_user.id][link].chat_id = chat_.id
+            if not chat_.type == 'channel':
+                worker.channels[m.from_user.id][link].chat_status = 'Группа'
             post = worker.channels[m.from_user.id][link].create_post(m.from_user.username)
             if chat_.description and m.from_user.username in chat_.description:
                 print(f"USER {m.from_user.username} IN DESCRIPTION OF CHAT {chat_.title}")
