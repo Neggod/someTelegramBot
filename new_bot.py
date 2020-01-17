@@ -247,7 +247,7 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
             return text, btn
     
     post = worker.channels[user_id][link].create_post(worker.users[user_id].username)
-    worker.users[user_id].bad_target = worker.channels[user_id][link].create_bad_target
+    worker.users[user_id].bad_target = worker.channels[user_id][link].create_bad_target()
     btn = set_buttons(pattern='edit', bad_target=worker.users[user_id].bad_target)
     return post, btn
 
