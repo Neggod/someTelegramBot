@@ -27,7 +27,7 @@ check_chat_link = parser.get('Telegram', 'check_chat_link')
 check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_link})"
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
-apihelper.proxy = None  # {'https': 'https://127.0.0.1:8888'}
+apihelper.proxy = None # {'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username.replace("_", "\_")
 ALL_CATEGORIES = ["Медицина", "Еда и рецепты", "Семья и отношения", "Блоги", "Красота и мода", "Новости", "Здоровье",
@@ -1145,10 +1145,11 @@ def commands(m):  # FUCKING TODO
                                     'voice', 'location', 'contact'])
 def get_group_chat(m: types.Message):
     print(f"USER {m.from_user.username} YIELD IN CLOSED CHANNEL {worker.users[m.from_user.id]} =)")
+    print(m)
     link = worker.users[m.from_user.id].target_url
     if link and worker.channels.get(m.from_user.id).get(link):
-        text, btn = check_user_group(m.forward_from_chat.id, m.chat.id, link)
-        bot.send_message(m.chat.id, text, reply_markup=btn, parse_mode='Markdown',
+        text, btn = check_user_group(m.chat.id, m.from_user.id, link)
+        bot.send_message(m.from_user.id, text, reply_markup=btn, parse_mode='Markdown',
                          disable_web_page_preview=True)
         
         # try:
