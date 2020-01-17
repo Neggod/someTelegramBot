@@ -202,11 +202,10 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
     big_btn = set_buttons(pattern='default')
     chat_ = total = None
     if new_channel:
-        btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
+        btn = set_buttons(pattern='edit', bad_target=worker.users[user_id].bad_target)
         try:
             print(f"USER {worker.users[user_id].username} TRY PARSING DATA FROM CHANNEL {chat_id}")
             chat_ = bot.get_chat(chat_id)
-            btn = set_buttons(pattern='ready', **{'ready': f'Исправил add_channel {chat_.id}'})
             print(chat_)
             total = bot.get_chat_members_count(chat_.id)
             if total < 1000:
