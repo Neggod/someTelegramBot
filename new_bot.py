@@ -209,6 +209,7 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
             print(chat_)
             total = bot.get_chat_members_count(chat_.id)
             if total < 1000:
+                worker.users[user_id].clear()
                 return "В вашем канале меньше 1000 подписчиков.", big_btn
             if not chat_.description or (chat_.description and not worker.users[user_id].username in chat_.description):
 
