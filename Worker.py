@@ -267,14 +267,14 @@ class Worker:
                 delta = now - datetime.datetime.fromtimestamp(self.channels[chat_id][link].date_of_last_post)
                 if delta.seconds // (60 * 60 * self.__time_limit):
                     print("TIME OK")
-                    self.channels[chat_id][link].date_of_last_post = int(now.timestamp()*1000)
+                    self.channels[chat_id][link].date_of_last_post = int(now.timestamp())
                     return True
                 else:
                     print("TIME NOT OK")
                     return False
             elif not self.channels[chat_id][link].date_of_last_post:
                 print("NOT TIME")
-                self.channels[chat_id][link].date_of_last_post = int(now.timestamp()*1000)
+                self.channels[chat_id][link].date_of_last_post = int(now.timestamp())
                 return True
             else:
                 print("STATUS NOT OK, TIME NOT KNOWN")
