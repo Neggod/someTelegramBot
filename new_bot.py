@@ -27,7 +27,7 @@ check_chat_link = parser.get('Telegram', 'check_chat_link')
 check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_link})"
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
-apihelper.proxy = None # {'https': 'https://127.0.0.1:8888'}
+apihelper.proxy = {'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username.replace("_", "\_")
 ALL_CATEGORIES = ["Медицина", "Еда и рецепты", "Семья и отношения", "Блоги", "Красота и мода", "Новости", "Здоровье",
@@ -208,9 +208,9 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
             chat_ = bot.get_chat(chat_id)
             print(chat_)
             total = bot.get_chat_members_count(chat_.id)
-            # if total < 1000:
-            #     worker.users[user_id].clear()
-            #     return "В вашем канале меньше 1000 подписчиков.", big_btn
+            if total < 1000:
+                worker.users[user_id].clear()
+                return "В вашем канале меньше 1000 подписчиков.", big_btn
             if not chat_.description or (chat_.description and not worker.users[user_id].username in chat_.description):
 
                 print(f"USER {worker.users[user_id].username} NOT IN DESCRIPTION OF CHAT {chat_.title}")

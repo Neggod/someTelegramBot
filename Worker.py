@@ -261,21 +261,20 @@ class Worker:
     def check_timer(self, chat_id, link, now):
         print(chat_id, link)
         if self.channels.get(chat_id) and self.channels[chat_id].get(link):
-            status = self.check_channel(link, chat_id)
             # now = datetime.datetime.now()
-            if status == 0 and self.channels[chat_id][link].date_of_last_post:
+            if self.channels[chat_id][link].date_of_last_post:
                 print("CHECK LAST TIME SENDING")
                 delta = now - datetime.datetime.fromtimestamp(self.channels[chat_id][link].date_of_last_post)
                 if delta.seconds // (60 * 60 * self.__time_limit):
                     print("TIME OK")
-                    self.channels[chat_id][link].date_of_last_post = int(now.timestamp())
+                    self.channels[chat_id][link].date_of_last_post = int(now.timestamp()*1000)
                     return True
                 else:
                     print("TIME NOT OK")
                     return False
             elif not self.channels[chat_id][link].date_of_last_post:
                 print("NOT TIME")
-                self.channels[chat_id][link].date_of_last_post = int(now.timestamp())
+                self.channels[chat_id][link].date_of_last_post = int(now.timestamp()*1000)
                 return True
             else:
                 print("STATUS NOT OK, TIME NOT KNOWN")
