@@ -375,7 +375,7 @@ def open_channel(m: types.Message):
             bot.delete_message(m.chat.id, m_id)
             bot.send_message(m.chat.id, text, reply_markup=btn, parse_mode='Markdown',
                              disable_web_page_preview=True)
-          except telebot.apihelper.ApiException:
+        except telebot.apihelper.ApiException:
             print(f"USER {m.chat.username} INPUT BROKEN URL")
             worker.users[m.chat.id].clear()
             bot.send_message(m.chat.id, "Вы прислали некорректную ссылку. Попробуйте еще раз.")
