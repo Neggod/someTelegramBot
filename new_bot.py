@@ -208,9 +208,9 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
             chat_ = bot.get_chat(chat_id)
             print(chat_)
             total = bot.get_chat_members_count(chat_.id)
-            if total < 1000:
-                worker.users[user_id].clear()
-                return "В вашем канале меньше 1000 подписчиков.", big_btn
+            # if total < 1000:
+            #     worker.users[user_id].clear()
+            #     return "В вашем канале меньше 1000 подписчиков.", big_btn
             if not chat_.description or (chat_.description and not worker.users[user_id].username in chat_.description):
 
                 print(f"USER {worker.users[user_id].username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
@@ -253,11 +253,12 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
 
 
 @bot.message_handler(commands=['start', 'help'])  # DONE
-def start_message(mess):
+def start_message(mess: types.Message):
     print("FIRST CHECK USER")
-    btn = set_buttons(pattern='default')
-    text = "Спасибо за активацию!\nВыберите пункт меню👇🏻"
-    bot.send_message(mess.chat.id, text, parse_mode='Markdown', reply_markup=btn)
+    if worker.check_user(mess.chat.id, mess.chat.username) or not worker.check_user(mess.chat.id, mess.chat.username):
+        btn = set_buttons(pattern='default')
+        text = "Спасибо за активацию!\nВыберите пункт меню👇🏻"
+        bot.send_message(mess.chat.id, text, parse_mode='Markdown', reply_markup=btn)
 
 
 @bot.message_handler(content_types=['text'],
@@ -271,7 +272,7 @@ def close_channel(m):
         btn = set_buttons(pattern='ready', **{'ready': 'Добавил'})
         bot.send_message(m.chat.id, "Необходимо добавить @username в настройках телеграм.", reply_markup=btn)
 
-    elif worker.check_user(m.chat.id, m.chat.username):
+    elif check_chats(m.chat.id):
         if m.text.count(" "):
             link = m.text.split(' ', 1)
         else:
@@ -348,7 +349,7 @@ def open_channel(m: types.Message):
         worker.users[m.chat.id].target = 'username'
         btn = set_buttons(pattern='ready', **{'ready': 'Добавил'})
         bot.send_message(m.chat.id, "Необходимо добавить @username в настройках телеграм.", reply_markup=btn)
-    elif worker.check_user(m.chat.id, m.chat.username):
+    elif check_chats(m.chat.id):
         print(f"GET OPEN CHANNEL LINK FROM USER {m.chat.username}")
         try:
             if m.text.count(' '):
@@ -993,7 +994,7 @@ def forwarded_message(m):
             text, btn = check_user_group(m.forward_from_chat.id, m.chat.id, link)
             bot.send_message(m.chat.id, text, reply_markup=btn, parse_mode='Markdown',
                              disable_web_page_preview=True)
-            
+
             # try:
             #     print(f"USER {m.chat.username} TRY PARSING DATA FROM CHANNEL {m.forward_from_chat.title}")
             #     chat_ = bot.get_chat(m.forward_from_chat.id)
@@ -1151,6 +1152,7 @@ def get_group_chat(m: types.Message):
         text, btn = check_user_group(m.chat.id, m.from_user.id, link)
         bot.send_message(m.from_user.id, text, reply_markup=btn, parse_mode='Markdown',
                          disable_web_page_preview=True)
+        bot.leave_chat(m.chat.id)
         
         # try:
         #     print(f"USER {m.from_user.username} TRY PARSING DATA FROM CHANNEL {m.chat.title}")
