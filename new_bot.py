@@ -27,7 +27,7 @@ check_chat_link = parser.get('Telegram', 'check_chat_link')
 check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_link})"
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
-apihelper.proxy = {'https': 'https://127.0.0.1:8888'}
+apihelper.proxy = None #{'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username.replace("_", "\_")
 ALL_CATEGORIES = ["Медицина", "Еда и рецепты", "Семья и отношения", "Блоги", "Красота и мода", "Новости", "Здоровье",
