@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
 import datetime
 from collections import defaultdict
 
@@ -97,7 +101,7 @@ class Channel:
             self.name.replace("_", "\_")
             temp_name = ("[" + self.name + "](" + link_channel + ")")
         print(self.name)
-        self.post = u'*Канал*: {0}\nТематика: {1}\n\n\U0001F465 Подписчиков: {2}\n'.format(
+        self.post = u'*{0}*: {1}\nТематика: {2}\n\n\U0001F465 Подписчиков: {3}\n'.format(self.chat_status,
             (link_channel if link_channel.startswith("@") else f'{temp_name if temp_name else ""}'),
 
             (self.description if self.description else ""),

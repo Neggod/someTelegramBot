@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+
 import datetime
 import os
 import time
@@ -225,6 +229,7 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
                 else:
                     print(f" {worker.users[user_id]} IS NOT ADMIN OF CHAT {chat_.title}")
                     worker.users[user_id].target = 'add_channel'
+                    btn = set_buttons(pattern='ready', **{'ready': 'Добавил channel'})
                     text = f"Вы не являетесь администратором группы {chat_.title}, " \
                            f"нужно добавить свой @username в описание канала" \
                            f"и нажать на кнопку, чтобы продолжить"
@@ -241,10 +246,11 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
         except telebot.apihelper.ApiException:
             print(f"SLY {worker.users[user_id]} FORWARD MESSAGE BUT DON`T ADD IN CHANNEL")
             worker.users[user_id].target = 'add_channel'
+
             text = (f"Так как это закрытый канал или группа - необходимо добавить туда {bot_name}, и:\n "
                     f"-*Переслать мне какое-нибудь сообщение с канала, если это канал*.\n"
                     f"-*Написать в группе любое сообщение, если это группа*.")
-            return text, btn
+            return text, big_btn
     
     post = worker.channels[user_id][link].create_post(worker.users[user_id].username)
     worker.users[user_id].bad_target = worker.channels[user_id][link].create_bad_target()
