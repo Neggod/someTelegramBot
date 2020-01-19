@@ -1015,7 +1015,7 @@ def commands(m):  # FUCKING TODO
 
 
 @bot.message_handler(func=lambda m: m.chat.id < 0 and m.chat.id not in [main_channel_id, check_chat_id]
-                                    and worker.users.get(m.from_user.id),
+                                    and m.from_user.id in worker.users,
                      content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
                                     'voice', 'location', 'contact'])
 def get_group_chat(m: types.Message):
