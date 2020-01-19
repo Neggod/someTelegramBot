@@ -244,7 +244,7 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
                 worker.channels[user_id][link].chat_status = "Группа"
 
         except telebot.apihelper.ApiException:
-            if chat_ and chat_.type == 'supergroup':
+            if chat_:
                 worker.users[user_id].target = 'add_channel'
                 btn = set_buttons(pattern='add_channel', **{"Исправил": f"{chat_.id}"})
                 text = "Необходимо добавить свой @username в описание канала и нажать на кнопку."
