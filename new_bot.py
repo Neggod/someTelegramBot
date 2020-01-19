@@ -304,8 +304,8 @@ def close_channel(m):
             if (now - time_).seconds // (60 * 60) >= worker.limit:
                 worker.users[m.chat.id].target = 'send'
             else:
-                hours = worker.limit * 3600 - (now - time_).seconds // (60 * 60)
-                minutes = worker.limit * 3600 - ((now - time_).seconds % (60 * 60)) // 60
+                hours = (worker.limit * 3600 - (now - time_).seconds) // (60 * 60)
+                minutes = ((worker.limit * 3600 - (now - time_).seconds) % (60 * 60)) // 60
                 hours_text = "{0}".format('' if hours == 0 else
                                           '{0}'.format(f"{[hours]} час" if hours % 10 == 1 else
                                                        '{0}'.format(f'{hours} часа' if hours % 10 in [2,3,4] else
@@ -370,8 +370,8 @@ def open_channel(m: types.Message):
                 if (now - time_).seconds // (60 * 60) >= worker.limit:
                     worker.users[m.chat.id].target = 'send'
                 else:
-                    hours = worker.limit * 3600 - (now - time_).seconds // (60 * 60)
-                    minutes = worker.limit * 3600 - ((now - time_).seconds % (60 * 60)) // 60
+                    hours = (worker.limit * 3600 - (now - time_).seconds) // (60 * 60)
+                    minutes = ((worker.limit * 3600 - (now - time_).seconds) % (60 * 60)) // 60
                     hours_text = "{0}".format('' if hours == 0 else
                                               '{0}'.format(f"{hours} час" if hours % 10 == 1 else
                                                            '{0}'.format(f'{hours} часа' if hours % 10 in [2, 3, 4] else
@@ -484,8 +484,8 @@ class CallbackCommands:
 
             else:
                 time_ = datetime.datetime.fromtimestamp(worker.channels[chat_id][link].date_of_last_post)
-                hours = worker.limit * 3600 - (now - time_).seconds // (60 * 60)
-                minutes = worker.limit * 3600 - ((now - time_).seconds % (60 * 60)) // 60
+                hours = (worker.limit * 3600 - (now - time_).seconds) // (60 * 60)
+                minutes = ((worker.limit * 3600 - (now - time_).seconds) % (60 * 60)) // 60
                 hours_text = "{0}".format('' if not hours % 10 else
                                           '{0}'.format(f"{hours} час" if hours % 10 == 1 else
                                                        '{0}'.format(f'{hours} часа' if hours % 10 in [2, 3, 4] else
