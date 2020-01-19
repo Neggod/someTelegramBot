@@ -244,6 +244,12 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
                 worker.channels[user_id][link].chat_status = "Группа"
 
         except telebot.apihelper.ApiException:
+            if chat_ and chat_.type == 'supergroup':
+                worker.users[user_id].target = 'add_channel'
+                btn = set_buttons(pattern='add_channel', **{"Исправил": f"{chat_.id}"})
+                text = "Необходимо добавить свой @username в описание канала и нажать на кнопку."
+                return text, btn
+
             print(f"SLY {worker.users[user_id]} FORWARD MESSAGE BUT DON`T ADD IN CHANNEL")
             worker.users[user_id].target = 'add_channel'
 
@@ -400,21 +406,26 @@ class CallbackCommands:
         print(f"CALLBACK ADD CHANNEL")
 
         try:
+            link = worker.users[chat_id].target_url
             channel_id, *args = args
-            if bot.get_chat_member(channel_id, chat_id).status == 'administrator' or \
-                    (worker.users[chat_id].username in bot.get_chat(channel_id).description):
-                print(f"USER {chat_id} IN OUR TARGET CHANNEL")
-                link = worker.users[chat_id].target_url
-                worker.users[chat_id].target = 'edit'
-                post = worker.channels[chat_id][link].create_post(worker.users[chat_id].username)
-                btn = set_buttons(pattern='edit')
-                bot.edit_message_text('Вот что я собрал по вашему каналу:\n ' + post, chat_id, mess_id,
-                                      reply_markup=btn, parse_mode='Markdown')
-            else:
-                print(f"USER {chat_id} NOT IN SELF TARGET CHANNEL")
-                btn = set_buttons(pattern='defaulf')
-                worker.users[chat_id].clear()
-                bot.edit_message_text(f'Видимо вы нажали кнопку просто так. :)', chat_id, mess_id, reply_markup=btn)
+            text, btn = check_user_group(channel_id, chat_id, link)
+            bot.delete_message(chat_id, mess_id)
+            bot.send_message(chat_id, text, reply_markup=btn, parse_mode='Markdown',
+                             disable_web_page_preview=True)
+            # if bot.get_chat_member(channel_id, chat_id).status == 'administrator' or \
+            #         (worker.users[chat_id].username in bot.get_chat(channel_id).description):
+            #     print(f"USER {chat_id} IN OUR TARGET CHANNEL")
+            #     link = worker.users[chat_id].target_url
+            #     worker.users[chat_id].target = 'edit'
+            #     post = worker.channels[chat_id][link].create_post(worker.users[chat_id].username)
+            #     btn = set_buttons(pattern='edit')
+            #     bot.edit_message_text('Вот что я собрал по вашему каналу:\n ' + post, chat_id, mess_id,
+            #                           reply_markup=btn, parse_mode='Markdown')
+            # else:
+            #     print(f"USER {chat_id} NOT IN SELF TARGET CHANNEL")
+            #     btn = set_buttons(pattern='defaulf')
+            #     worker.users[chat_id].clear()
+            #     bot.edit_message_text(f'Видимо вы нажали кнопку просто так. :)', chat_id, mess_id, reply_markup=btn)
         except telebot.apihelper.ApiException:
             print(f"USER {chat_id} CALL ADD CHANNEL NOT IN START OR HELP")
             btn = set_buttons()
