@@ -286,14 +286,14 @@ def close_channel(m):
 
     elif check_chats(m.chat.id):
         if m.text.count(" "):
-            link = m.text.split(' ', 1)
+            link = m.text.split(' ', 1)[0]
         else:
             link = m.text
 
         worker.users[m.chat.id].clear()
         worker.users[m.chat.id].target_url = link
         print("CHECK PRIVATE CHANNEL LINK. TRY CHECK DB OR PARSING")
-        m_id = bot.send_message(m.chat.id, f'Проверяю ваш канал {m.text}', # DELETE THIS MESSAGE LATER
+        m_id = bot.send_message(m.chat.id, f'Проверяю ваш канал {link}', # DELETE THIS MESSAGE LATER
                          disable_web_page_preview=True, reply_markup=big_btn).message_id
         status = worker.check_channel(link, m.chat.id, m.chat.username)
         if status == 0 and worker.channels[m.chat.id][link].chat_id:
@@ -351,7 +351,7 @@ def open_channel(m: types.Message):
         print(f"GET OPEN CHANNEL LINK FROM USER {m.chat.username}")
         try:
             if m.text.count(' '):
-                link = m.text.split(' ', 1)
+                link = m.text.split(' ', 1)[0]
                 link = link if link.startswith('@') else ('@' + link.rsplit('/', 1)[-1])
             else:
                 link = m.text if m.text.startswith('@') else ('@' + m.text.rsplit('/', 1)[-1])
@@ -957,7 +957,7 @@ def commands(m):  # FUCKING TODO
             bot.edit_message_reply_markup(m.chat.id, m_id, reply_markup=types.ReplyKeyboardRemove())
         else:
             if check_chats(m.chat.id):
-                print(f"USER {m.chat.id} WAS SS")
+                print(f"USER {m.chat.username} WAS SS")
                 text = "Для того чтобы запустить объявление о продаже рекламы: \n" \
                        "— Ваш личный  юзернейм должен быть в информации о канале;\n" \
                        "— На канале должно быть более 1000 подписчиков. \n" \
