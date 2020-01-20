@@ -212,9 +212,9 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
             chat_ = bot.get_chat(chat_id)
             print(chat_)
             total = bot.get_chat_members_count(chat_.id)
-            # if total < 1000:
-            #     worker.users[user_id].clear()
-            #     return "В вашем канале меньше 1000 подписчиков.", big_btn
+            if total < 1000:
+                worker.users[user_id].clear()
+                return "В вашем канале меньше 1000 подписчиков.", big_btn
             if not chat_.description or (not worker.users[user_id].username in chat_.description):
 
                 print(f"USER {worker.users[user_id].username} NOT IN DESCRIPTION OF CHAT {chat_.title}")
@@ -408,6 +408,11 @@ class CallbackCommands:
         try:
             link = worker.users[chat_id].target_url
             channel_id, *args = args
+            await_text = "Телеграм не сразу обновляет описание канала. Давай подождём 10 секунд и я проверю обновилось ли оно?"
+            bot.edit_message_text(await_text,chat_id, mess_id, reply_markup=None)
+            print('BOT SLEEP 10 SECONDS BEFORE CHECK GROUP DESCRIPTION. Z-z-z-z-z')
+            time.sleep(10)
+            print('BOT IS WOKE UP')
             text, btn = check_user_group(channel_id, chat_id, link)
             bot.delete_message(chat_id, mess_id)
             bot.send_message(chat_id, text, reply_markup=btn, parse_mode='Markdown',
