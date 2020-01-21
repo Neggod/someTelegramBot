@@ -268,8 +268,8 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
 @bot.message_handler(commands=['start', 'help'])  # DONE
 def start_message(mess: types.Message):
     print("FIRST CHECK USER")
-    if mess.chat.username:
-        worker.check_user(mess.chat.id, mess.chat.username)
+    if not worker.check_user(mess.chat.id, mess.chat.username):
+        print(f"NEW USER {mess.chat.username}")
     btn = set_buttons(pattern='default')
     text = "Спасибо за активацию!\nВыберите пункт меню👇🏻"
     bot.send_message(mess.chat.id, text, parse_mode='Markdown', reply_markup=btn)
