@@ -31,6 +31,7 @@ check_chat_link = parser.get('Telegram', 'check_chat_link')
 check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_link})"
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
+# Если будет работать через прокси - вместо None надо вставить {'https': 'https://адрес_прокси:порт_прокси'}
 apihelper.proxy = None #{'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username.replace("_", "\_")
@@ -408,8 +409,8 @@ class CallbackCommands:
         try:
             link = worker.users[chat_id].target_url
             channel_id, *args = args
-            await_text = "Телеграм не сразу обновляет описание канала. Давай подождём 10 секунд и я проверю обновилось ли оно?"
-            bot.edit_message_text(await_text,chat_id, mess_id, reply_markup=None)
+            await_text = "Телеграм не сразу обновляет описание канала. Давай подождём 10 секунд и я проверю обновилось ли оно."
+            bot.edit_message_text(await_text, chat_id, mess_id, reply_markup=None)
             print('BOT SLEEP 10 SECONDS BEFORE CHECK GROUP DESCRIPTION. Z-z-z-z-z')
             time.sleep(10)
             print('BOT IS WOKE UP')
@@ -417,20 +418,6 @@ class CallbackCommands:
             bot.delete_message(chat_id, mess_id)
             bot.send_message(chat_id, text, reply_markup=btn, parse_mode='Markdown',
                              disable_web_page_preview=True)
-            # if bot.get_chat_member(channel_id, chat_id).status == 'administrator' or \
-            #         (worker.users[chat_id].username in bot.get_chat(channel_id).description):
-            #     print(f"USER {chat_id} IN OUR TARGET CHANNEL")
-            #     link = worker.users[chat_id].target_url
-            #     worker.users[chat_id].target = 'edit'
-            #     post = worker.channels[chat_id][link].create_post(worker.users[chat_id].username)
-            #     btn = set_buttons(pattern='edit')
-            #     bot.edit_message_text('Вот что я собрал по вашему каналу:\n ' + post, chat_id, mess_id,
-            #                           reply_markup=btn, parse_mode='Markdown')
-            # else:
-            #     print(f"USER {chat_id} NOT IN SELF TARGET CHANNEL")
-            #     btn = set_buttons(pattern='defaulf')
-            #     worker.users[chat_id].clear()
-            #     bot.edit_message_text(f'Видимо вы нажали кнопку просто так. :)', chat_id, mess_id, reply_markup=btn)
         except telebot.apihelper.ApiException:
             print(f"USER {chat_id} CALL ADD CHANNEL NOT IN START OR HELP")
             btn = set_buttons()
