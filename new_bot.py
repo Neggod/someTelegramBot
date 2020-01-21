@@ -32,7 +32,7 @@ check_chat_name = f"[{parser.get('Telegram', 'check_chat_name')}]({check_chat_li
 admin = parser.get('Telegram', 'admin')
 worker = Worker(int(parser.get('Telegram', 'time_limit')))
 # Если будет работать через прокси - вместо None надо вставить {'https': 'https://адрес_прокси:порт_прокси'}
-apihelper.proxy = None #{'https': 'https://127.0.0.1:8888'}
+apihelper.proxy = None  # {'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot(token, num_threads=3)
 bot_name = '@' + bot.get_me().username.replace("_", "\_")
 ALL_CATEGORIES = ["Медицина", "Еда и рецепты", "Семья и отношения", "Блоги", "Красота и мода", "Новости", "Здоровье",
@@ -258,7 +258,7 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
                     f"-*Переслать мне какое-нибудь сообщение с канала, если это канал*.\n"
                     f"-*Написать в группе любое сообщение, если это группа*.")
             return text, big_btn
-    
+
     post = worker.channels[user_id][link].create_post(worker.users[user_id].username)
     worker.users[user_id].bad_target = worker.channels[user_id][link].create_bad_target()
     btn = set_buttons(pattern='edit', bad_target=worker.users[user_id].bad_target)
@@ -268,10 +268,11 @@ def check_user_group(chat_id, user_id, link, new_channel=True):
 @bot.message_handler(commands=['start', 'help'])  # DONE
 def start_message(mess: types.Message):
     print("FIRST CHECK USER")
-    if worker.check_user(mess.chat.id, mess.chat.username) or not worker.check_user(mess.chat.id, mess.chat.username):
-        btn = set_buttons(pattern='default')
-        text = "Спасибо за активацию!\nВыберите пункт меню👇🏻"
-        bot.send_message(mess.chat.id, text, parse_mode='Markdown', reply_markup=btn)
+    if mess.chat.username:
+        worker.check_user(mess.chat.id, mess.chat.username)
+    btn = set_buttons(pattern='default')
+    text = "Спасибо за активацию!\nВыберите пункт меню👇🏻"
+    bot.send_message(mess.chat.id, text, parse_mode='Markdown', reply_markup=btn)
 
 
 @bot.message_handler(content_types=['text'],
@@ -294,8 +295,8 @@ def close_channel(m):
         worker.users[m.chat.id].clear()
         worker.users[m.chat.id].target_url = link
         print("CHECK PRIVATE CHANNEL LINK. TRY CHECK DB OR PARSING")
-        m_id = bot.send_message(m.chat.id, f'Проверяю ваш канал {link}', # DELETE THIS MESSAGE LATER
-                         disable_web_page_preview=True, reply_markup=big_btn).message_id
+        m_id = bot.send_message(m.chat.id, f'Проверяю ваш канал {link}',  # DELETE THIS MESSAGE LATER
+                                disable_web_page_preview=True, reply_markup=big_btn).message_id
         status = worker.check_channel(link, m.chat.id, m.chat.username)
         if status == 0 and worker.channels[m.chat.id][link].chat_id:
             print(f"PRIVATE CHANNEL OF {m.chat.username} IN DB OR IN MEMO")
@@ -309,11 +310,11 @@ def close_channel(m):
                 minutes = ((worker.limit * 3600 - (now - time_).seconds) % (60 * 60)) // 60
                 hours_text = "{0}".format('' if hours == 0 else
                                           '{0}'.format(f"{[hours]} час" if hours % 10 == 1 else
-                                                       '{0}'.format(f'{hours} часа' if hours % 10 in [2,3,4] else
+                                                       '{0}'.format(f'{hours} часа' if hours % 10 in [2, 3, 4] else
                                                                     f"{hours} часов")))
                 minutes_text = '{0}'.format(f"{[minutes]} минуту" if hours % 10 == 1 else
-                                                       '{0}'.format(f'{minutes} минуты' if hours % 10 in [2,3,4] else
-                                                                    f"{minutes} минут"))
+                                            '{0}'.format(f'{minutes} минуты' if hours % 10 in [2, 3, 4] else
+                                                         f"{minutes} минут"))
                 text = f"В следующий раз это объявление можно отправить через {hours_text} {minutes_text}"
                 worker.users[m.chat.id].clear()
                 btn = big_btn
@@ -361,11 +362,11 @@ def open_channel(m: types.Message):
             m_id = bot.send_message(m.chat.id, f'Проверяю ваш канал {m.text}',  # DELETE THIS MESSAGE LATER
                                     disable_web_page_preview=True, reply_markup=big_btn).message_id
             status = worker.check_channel(link, m.chat.id, m.chat.username)
-            
+
             if status == 0 and worker.channels[m.chat.id][link].chat_id:
                 text, btn = check_user_group(link, m.chat.id, link, new_channel=False)
                 print(f"PRIVATE CHANNEL OF {m.chat.username} IN DB OR IN MEMO")
-                
+
                 time_ = datetime.datetime.fromtimestamp(worker.channels[m.chat.id][link].date_of_last_post)
                 now = datetime.datetime.now()
                 if (now - time_).seconds // (60 * 60) >= worker.limit:
