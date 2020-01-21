@@ -280,6 +280,7 @@ def start_message(mess: types.Message):
                          'https://t.me/joinchat/'))  # DONE
 def close_channel(m):
     print(f"CHECK PRIVATE CHANNEL BY {m.chat.username}")
+    worker.check_user(m.chat.id, m.chat.username)
     big_btn = set_buttons(pattern='default')
     if not m.chat.username:
         worker.users[m.chat.id].target = 'username'
@@ -344,6 +345,7 @@ def close_channel(m):
         m.text.startswith("@") or (m.text.startswith("https://t.me"))
         and 'joinchat' not in m.text))  # DONE
 def open_channel(m: types.Message):
+    worker.check_user(m.chat.id, m.chat.username)
     big_btn = set_buttons(pattern='default')
     if not m.chat.username:
         worker.users[m.chat.id].target = 'username'
@@ -915,6 +917,7 @@ def forwarded_message(m):
         else:
             bot.leave_chat(m.chat.id)
     else:
+        print(f'THIS IS NEW USER? {worker.check_user(m.from_user.id, m.from_user.username)}')
         worker.users[m.chat.id].clear()
         text = "Для того чтобы запустить объявление о продаже рекламы: \n" \
                "— Ваш личный  юзернейм должен быть в информации о канале;\n" \
@@ -1012,8 +1015,9 @@ def commands(m):  # FUCKING TODO
                      content_types=['text', 'audio', 'document', 'photo', 'sticker', 'video', 'video_note',
                                     'voice', 'location', 'contact'])
 def get_group_chat(m: types.Message):
+    print(f'THIS IS NEW USER? {worker.check_user(m.from_user.id, m.from_user.username)}')
     print(f"USER {m.from_user.username} YIELD IN CLOSED CHANNEL {worker.users[m.from_user.id]} =)")
-    print(m)
+
     link = worker.users[m.from_user.id].target_url
     if link and worker.channels.get(m.from_user.id).get(link):
         text, btn = check_user_group(m.chat.id, m.from_user.id, link)
