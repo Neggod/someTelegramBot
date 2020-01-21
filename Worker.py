@@ -311,7 +311,9 @@ class Worker:
             login_url = parser.get('Telemetr', 'login_url')
             payload = {'login[email]': login, 'login[password]': password, 'do_login': ''}
             try:
-                resp = session.post(login_url, data=payload)
+                resp = session.post(login_url, data=payload, allow_redirects=True)
+                print(session.cookies)
+                print(resp.cookies)
                 session.headers['Cookie'] = 'hash=' + session.cookies['hash']
                 parser.set('Telemetr-headers', 'Cookie', session.headers['Cookie'])
                 with open(cfg_name, 'w') as f:
@@ -319,7 +321,7 @@ class Worker:
                     time.sleep(1)
                 print("TELEMETR AUTH. COOKIE - SAVED")
                 return session
-            except (requests.exceptions.ReadTimeout, requests.exceptions.ProxyError) as e:
+            except (requests.exceptions.ReadTimeout, requests.exceptions.ProxyError, requests.exceptions.ConnectionError) as e:
                 print(e)
                 return
 
@@ -327,7 +329,7 @@ class Worker:
         for k, v in parser['Telemetr-headers'].items():
             if k == "Cookie" and not v:
                 continue
-            session.headers[k] = v
+            session.headers[k.capitalize()] = v
         if not session.headers.get('Cookie'):
             session = login(session)
         if not session:
@@ -337,7 +339,8 @@ class Worker:
             datas = {'name': link}
             stat_link = parser.get('Telemetr', 'statistic_url')
             try:
-                new_resp = session.get(stat_link, params=datas)
+                print(session.headers)
+                new_resp = session.get(stat_link, params=datas, timeout=1000)
                 print("PARSING DONE, LINK GET")
                 soup = bs(new_resp.content.decode(encoding="UTF-8"), 'lxml')
                 cols = soup.find_all('div', attrs={"class": "col-lg-4 col-md-4"})
@@ -365,10 +368,14 @@ class Worker:
                 else:
                     print(f"HASN`T CHANNEL {link} IN TELEMETR")
                     return None
-            except (requests.exceptions.ReadTimeout, requests.exceptions.ProxyError) as e:
+            except (requests.exceptions.ReadTimeout, requests.exceptions.ProxyError, requests.exceptions.ConnectionError) as e:
                 print(e)
                 print("PARSING DOESN`T WORK")
                 return
         else:
             print("SOMETHING ERROR IN PARSING")
             return None
+
+
+if __name__ == '__main__':
+    Worker.parse_link('@bizneskino')
