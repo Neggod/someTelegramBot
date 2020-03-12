@@ -21,7 +21,7 @@ telebot.logger.setLevel(logging.DEBUG)
 
 worker = Worker(1)
 # Если будет работать через прокси - вместо None надо вставить {'https': 'https://адрес_прокси:порт_прокси'}
-apihelper.proxy = {'https': 'https://127.0.0.1:8888'}
+# apihelper.proxy = {'https': 'https://127.0.0.1:8888'}
 bot = telebot.TeleBot('854264208:AAES4xVOauTJBivQT75atRrl_-0yY2Ow68c', threaded=False)
 
 file = 'BQACAgIAAxkBAAIJOl5qha71aNUpp4yzq2ZxW7pyCfd5AAJhBQACZCJZS0fdtTzmqClxGAQ'
