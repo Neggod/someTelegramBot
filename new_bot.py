@@ -32,8 +32,9 @@ def start_message(mess: types.Message):
     print("FIRST CHECK USER")
     if not worker.check_user(mess.chat.id, mess.chat.username):
         print(f"NEW USER {mess.chat.username}")
-    text = "Спасибо за активацию!\nБот в разработке до 25 марта, " \
-           "пока ознакомьтесь с моим чек-листом"
+    text = """Привет!
+Скоро здесь заработает двигатель твоего прогресса в китайском языке.
+А пока лови мой чек-лист "Как выучить китайский язык"."""
     bot.send_document(mess.chat.id, file, caption=text, parse_mode="Markdown")
 
 
