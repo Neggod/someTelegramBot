@@ -4,12 +4,16 @@ import os
 import sqlite3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-cfg_name = os.path.join(BASE_DIR, 'config.ini')
+db_name = 'users.db'
+create_script = """BEGIN TRANSACTION;
+	PRAGMA foreign_keys = on;
 
-parser = ConfigParser()
-parser.read(cfg_name)
-create_script = parser.get('sqlite_db', 'create_db')
-db = parser.get('sqlite_db', 'name')
+	CREATE TABLE IF NOT EXISTS "users" (
+	"id"	INTEGER DEFAULT 1 PRIMARY KEY AUTOINCREMENT,
+	"chat_id"	INTEGER DEFAULT 0 UNIQUE,
+	"username"	TEXT
+	);
+	COMMIT;"""
 
 
 class SQLiter:
@@ -56,84 +60,3 @@ class SQLiter:
                 print('wait')
                 time.sleep(2)
 
-    def update_user(self, chat_id, username):
-        while True:
-            try:
-
-                with self.db:
-                    self.cursor.execute('UPDATE users SET username = ? WHERE chat_id = ?', (username, chat_id))
-                    self.db.commit()
-                break
-            except sqlite3.ProgrammingError:
-                print("wait")
-
-    def add_new_channel(self, name_channel, link_channel, description, owner_id,
-                        subscribers, ads_cost, time_in_top_tape, pr,
-                        date_of_last_post, message_id, chat_status,
-                        notice=None, chat_id=None, views_per_post=None, er=None):
-        args = (chat_id, name_channel, link_channel, owner_id, description,
-                subscribers, views_per_post, er, ads_cost, time_in_top_tape, pr,
-                notice, date_of_last_post, message_id, chat_status)
-        while True:
-            try:
-                with self.db:
-                    self.cursor.execute(
-                        "INSERT OR REPLACE INTO channels_post (chat_id, name_channel, link_channel, "
-                        "owner_id, description,"
-                        "subscribers, views_per_post, er, ads_cost, time_in_top_tape, pr, notice,"
-                        "date_of_last_post, message_id, chat_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
-                        "?, ?)", args)
-                    self.db.commit()
-                print(f"{chat_status} {name_channel} added successfully in {date_of_last_post}")
-                break
-            except sqlite3.ProgrammingError:
-                print("wait")
-                time.sleep(2)
-
-    def get_channel(self, link_channel):
-        while True:
-            try:
-                with self.db:
-                    self.cursor.execute("SELECT * FROM channels_post WHERE link_channel = ?", (link_channel,))
-                print("get channel", link_channel)
-                return self.cursor.fetchone()
-            except sqlite3.ProgrammingError:
-                print("wait")
-                time.sleep(2)
-
-    def get_last_post(self, channel_name):
-        while True:
-            try:
-                with self.db:
-                    self.cursor.execute(
-                        "SELECT date_of_last_post, message_id FROM channels_post WHERE name_channel = ?",
-                        (channel_name,))
-                print("get channel", channel_name)
-                return self.cursor.fetchone()
-            except sqlite3.ProgrammingError:
-                print("WAIT")
-                time.sleep(2)
-
-    def set_time_of_last_post(self, channel_name, date, message_id):
-        while True:
-            try:
-                with self.db:
-                    self.cursor.execute(
-                        "UPDATE channels_post SET date_of_last_post = ?, message_id = ? WHERE name_channel = ?",
-                        (date, message_id, channel_name))
-                    self.db.commit()
-                break
-            except sqlite3.ProgrammingError:
-                print("WAIT")
-                time.sleep(2)
-
-    def drop_channels(self):
-        with self.db:
-            self.cursor.execute("delete from channels_post")
-            self.cursor.execute('delete from users')
-            self.db.commit()
-
-
-if __name__ == '__main__':
-    db = SQLiter(db)
-    db.drop_channels()
