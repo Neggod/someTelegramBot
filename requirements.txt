@@ -3,7 +3,7 @@ bs4==0.0.1
 certifi==2019.11.28
 chardet==3.0.4
 idna==2.8
-lxml==4.4.2
+lxml==4.9.1
 pyTelegramBotAPI==3.6.6
 requests==2.22.0
 six==1.12.0
